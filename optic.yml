@@ -1,0 +1,5 @@
+name: optic-go
+tasks:
+  start:
+    command: go run ./test
+    baseUrl: http://localhost:8889
