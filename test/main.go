@@ -14,22 +14,26 @@ var defaultHeaders = map[string]string{
 		"Chrome/86.0.4240.183 Safari/537.36",
 }
 
-type CustomTripper struct{}
+type customTripper struct {
+	base http.RoundTripper
+}
 
-func (t CustomTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+func (t customTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	for key, val := range defaultHeaders {
 		req.Header.Set(key, val)
 	}
-	return http.DefaultTransport.RoundTrip(req)
+	return t.base.RoundTrip(req)
 }
 
 func main() {
 	if err := doApi(opticgo.Config{
-		ApiUrl:               opticgo.MustUrl("https://ipleak.net/"),
-		OpticUrl:             opticgo.MustUrl("http://localhost:8889"),
-		ProxyListenAddr:      "",
-		DebugPrint:           false,
-		RoundTripper:         CustomTripper{},
+		ApiUrl:          opticgo.MustUrl("https://ipleak.net/"),
+		OpticUrl:        opticgo.MustUrl("http://localhost:8889"),
+		ProxyListenAddr: "",
+		DebugPrint:      false,
+		TripFunc: func(baseTripper http.RoundTripper) http.RoundTripper {
+			return customTripper{baseTripper}
+		},
 		InternetCheckTimeout: 10 * time.Second,
 	}); err != nil {
 		log.Fatalln(err)

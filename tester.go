@@ -26,11 +26,15 @@ type Config struct {
 	// Can specify hostname only, or hostname and port.
 	// If "hostname" is given, it will be expanded into "hostname:OPTIC_API_PORT".
 	// If "hostname:port" is given, it will not be altered, bypassing Optic. Useful for debugging.
-	ProxyListenAddr      string
-	OpticUrl             *url.URL          // Optic listen URL. This is the "baseUrl" in "optic.yml".
-	DebugPrint           bool              // Dump requests and responses to console.
-	RoundTripper         http.RoundTripper // Optional http.RoundTripper to modify request before its send to ApiUrl.
-	InternetCheckTimeout time.Duration     // If set, Tester will wait for internet access up to this duration, and then error out.
+	ProxyListenAddr string
+	// Optic listen URL. This is the "baseUrl" in "optic.yml".
+	OpticUrl *url.URL
+	// Dump requests and responses to console.
+	DebugPrint bool
+	// Optional function to modify request before it is send to ApiUrl.
+	TripFunc func(http.RoundTripper) http.RoundTripper
+	// If set, Tester will wait for internet access up to this duration, and then error out.
+	InternetCheckTimeout time.Duration
 }
 
 type TestDefinition struct {
@@ -58,8 +62,8 @@ func NewTester(config Config) (*Tester, error) {
 			Proxy:              http.ProxyFromEnvironment,
 			DisableCompression: true,
 		}}
-	if config.RoundTripper != nil {
-		client.Transport = config.RoundTripper
+	if config.TripFunc != nil {
+		client.Transport = config.TripFunc(client.Transport)
 	}
 	return &Tester{
 		config: config,
