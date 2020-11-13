@@ -153,12 +153,12 @@ func (t *Tester) proxyListen(errChan chan<- error) {
 		defer resp.Body.Close()
 
 		// redirect API response to Optic
-		w.WriteHeader(resp.StatusCode)
 		for key, vals := range resp.Header {
 			for _, val := range vals {
 				w.Header().Add(key, val)
 			}
 		}
+		w.WriteHeader(resp.StatusCode)
 		if _, err := io.Copy(w, resp.Body); err != nil {
 			errChan <- err
 			return
