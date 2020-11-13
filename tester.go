@@ -57,11 +57,7 @@ func NewTester(config Config) (*Tester, error) {
 		}
 		config.ProxyListenAddr += ":" + opticPort
 	}
-	client := http.Client{
-		Transport: &http.Transport{
-			Proxy:              http.ProxyFromEnvironment,
-			DisableCompression: true,
-		}}
+	client := http.Client{Transport: http.DefaultTransport}
 	if config.TripFunc != nil {
 		client.Transport = config.TripFunc(client.Transport)
 	}
