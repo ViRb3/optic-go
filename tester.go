@@ -53,7 +53,11 @@ func NewTester(config Config) (*Tester, error) {
 		}
 		config.ProxyListenAddr += ":" + opticPort
 	}
-	client := http.Client{}
+	client := http.Client{
+		Transport: &http.Transport{
+			Proxy:              http.ProxyFromEnvironment,
+			DisableCompression: true,
+		}}
 	if config.RoundTripper != nil {
 		client.Transport = config.RoundTripper
 	}
