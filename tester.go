@@ -67,7 +67,7 @@ func (t *Tester) Start(tests []TestDefinition) (<-chan error, context.CancelFunc
 	errChan := make(chan error)
 	ctx, cancelFunc := context.WithCancel(context.Background())
 
-	go func() { errChan <- t.proxyListen(errChan) }()
+	go func() { t.proxyListen(errChan) }()
 	go func() {
 		if t.config.InternetCheckTimeout != 0 {
 			if err := waitInternetAccess(t.config.InternetCheckTimeout); err != nil {
@@ -130,7 +130,7 @@ func (t *Tester) runTest(test *TestDefinition) error {
 	return nil
 }
 
-func (t *Tester) proxyListen(errChan chan<- error) error {
+func (t *Tester) proxyListen(errChan chan<- error) {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		log.Println("Proxy received: " + r.RequestURI)
 		// redirect Optic request to the tested API
@@ -157,5 +157,5 @@ func (t *Tester) proxyListen(errChan chan<- error) error {
 		}
 		log.Println("Done with: " + r.URL.Path)
 	})
-	return http.ListenAndServe(t.config.ProxyListenAddr, nil)
+	errChan <- http.ListenAndServe(t.config.ProxyListenAddr, nil)
 }
