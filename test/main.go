@@ -27,7 +27,7 @@ func (t customTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 
 func main() {
 	if err := doApi(opticgo.Config{
-		ApiUrl:          opticgo.MustUrl("https://ipleak.net/"),
+		ApiUrl:          opticgo.MustUrl("https://api.ipify.org/"),
 		OpticUrl:        opticgo.MustUrl("http://localhost:8889"),
 		ProxyListenAddr: "",
 		DebugPrint:      false,
@@ -62,7 +62,7 @@ func getTests() []opticgo.TestDefinition {
 		{
 			"Get IP data",
 			nil,
-			fmt.Sprintf("/json"),
+			fmt.Sprintf("/?format=json"),
 			"GET",
 		},
 	}
