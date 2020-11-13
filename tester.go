@@ -121,13 +121,6 @@ func (t *Tester) runTest(test *TestDefinition) error {
 		return err
 	}
 	defer resp.Body.Close()
-	if t.config.DebugPrint {
-		b, err := httputil.DumpResponse(resp, true)
-		if err != nil {
-			return err
-		}
-		log.Println(string(b))
-	}
 	if resp.StatusCode != 200 {
 		return errors.New(fmt.Sprintf("bad status code: %d", resp.StatusCode))
 	}
@@ -145,12 +138,29 @@ func (t *Tester) proxyListen(errChan chan<- error) {
 		r.Host = t.config.ApiUrl.Host
 		r.URL = t.config.ApiUrl.ResolveReference(r.URL)
 		r.RequestURI = "" // can't be set in request or client.Do will error
+
+		if t.config.DebugPrint {
+			b, err := httputil.DumpRequest(r, true)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			log.Println(string(b))
+		}
 		resp, err := t.client.Do(r)
 		if err != nil {
 			errChan <- err
 			return
 		}
 		defer resp.Body.Close()
+		if t.config.DebugPrint {
+			b, err := httputil.DumpResponse(resp, true)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			log.Println(string(b))
+		}
 
 		// redirect API response to Optic
 		for key, vals := range resp.Header {
