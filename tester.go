@@ -45,8 +45,9 @@ type TestDefinition struct {
 }
 
 type Tester struct {
-	config Config
-	client http.Client
+	config       Config
+	client       http.Client
+	proxyStarted bool
 }
 
 func NewTester(config Config) (*Tester, error) {
@@ -67,11 +68,28 @@ func NewTester(config Config) (*Tester, error) {
 	}, nil
 }
 
-func (t *Tester) Start(tests []TestDefinition) (<-chan error, context.CancelFunc) {
+// Start the proxy individually, usually for pre-setup before the tests.
+func (t *Tester) StartProxy() (<-chan error, error) {
+	if t.config.InternetCheckTimeout != 0 {
+		if err := waitInternetAccess(t.config.InternetCheckTimeout); err != nil {
+			return nil, err
+		}
+	}
+	errChan := make(chan error)
+	go func() { t.proxyListen(errChan) }()
+	t.proxyStarted = true
+	return errChan, nil
+}
+
+// Start the proxy and then the tests. If the proxy has already been started using StartProxy, it will skip it.
+func (t *Tester) StartAll(tests []TestDefinition) (<-chan error, context.CancelFunc, error) {
 	errChan := make(chan error)
 	ctx, cancelFunc := context.WithCancel(context.Background())
 
-	go func() { t.proxyListen(errChan) }()
+	if !t.proxyStarted {
+		go func() { t.proxyListen(errChan) }()
+		t.proxyStarted = true
+	}
 	go func() {
 		if t.config.InternetCheckTimeout != 0 {
 			if err := waitInternetAccess(t.config.InternetCheckTimeout); err != nil {
@@ -91,7 +109,7 @@ func (t *Tester) Start(tests []TestDefinition) (<-chan error, context.CancelFunc
 		}
 		close(errChan)
 	}()
-	return errChan, cancelFunc
+	return errChan, cancelFunc, nil
 }
 
 func (t *Tester) runTest(test *TestDefinition) error {

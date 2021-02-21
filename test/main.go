@@ -46,7 +46,10 @@ func doApi(config opticgo.Config) error {
 		return err
 	}
 
-	errChan, _ := tester.Start(getTests())
+	errChan, _, err := tester.StartAll(getTests())
+	if err != nil {
+		return err
+	}
 	errText := ""
 	for err := range errChan {
 		errText += err.Error() + "\n"
