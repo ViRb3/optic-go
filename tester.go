@@ -83,6 +83,11 @@ func (t *Tester) StartProxy() (<-chan error, error) {
 
 // Start the proxy and then the tests. If the proxy has already been started using StartProxy, it will skip it.
 func (t *Tester) StartAll(tests []TestDefinition) (<-chan error, context.CancelFunc, error) {
+	if t.config.InternetCheckTimeout != 0 {
+		if err := waitInternetAccess(t.config.InternetCheckTimeout); err != nil {
+			return nil, nil, err
+		}
+	}
 	errChan := make(chan error)
 	ctx, cancelFunc := context.WithCancel(context.Background())
 
@@ -91,12 +96,6 @@ func (t *Tester) StartAll(tests []TestDefinition) (<-chan error, context.CancelF
 		t.proxyStarted = true
 	}
 	go func() {
-		if t.config.InternetCheckTimeout != 0 {
-			if err := waitInternetAccess(t.config.InternetCheckTimeout); err != nil {
-				cancelFunc()
-				errChan <- err
-			}
-		}
 		log.Printf("Defined %d tests\n", len(tests))
 		for _, test := range tests {
 			if ctx.Err() != nil {
