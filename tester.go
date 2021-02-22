@@ -101,12 +101,13 @@ func (t *Tester) StartAll(tests []TestDefinition) (<-chan error, context.CancelF
 			if ctx.Err() != nil {
 				break
 			}
-			log.Println("Running test: " + test.RequestUrl)
+			log.Println("Running test: " + test.Name)
 			if err := t.runTest(&test); err != nil {
 				errChan <- err
 			}
 		}
 		close(errChan)
+		log.Println("Done with all tests")
 	}()
 	return errChan, cancelFunc, nil
 }
