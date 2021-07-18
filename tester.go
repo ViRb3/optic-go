@@ -22,9 +22,9 @@ import (
 type Config struct {
 	// URL of the API that will be tested. TestDefinition.RequestUrl is relative to this URL.
 	ApiUrl *url.URL
-	// Proxy listen address. Default is "localhost:OPTIC_API_PORT".
+	// Proxy listen address. Default is "localhost:PORT", where PORT is an environment variable provided by Optic.
 	// Can specify hostname only, or hostname and port.
-	// If "hostname" is given, it will be expanded into "hostname:OPTIC_API_PORT".
+	// If "hostname" is given, it will be expanded into "hostname:PORT".
 	// If "hostname:port" is given, it will not be altered, bypassing Optic. Useful for debugging.
 	ProxyListenAddr string
 	// Optic listen URL. This is the "baseUrl" in "optic.yml".
@@ -52,9 +52,9 @@ type Tester struct {
 
 func NewTester(config Config) (*Tester, error) {
 	if !strings.Contains(config.ProxyListenAddr, ":") {
-		opticPort := os.Getenv("OPTIC_API_PORT")
+		opticPort := os.Getenv("PORT")
 		if _, err := strconv.ParseInt(opticPort, 10, 64); err != nil {
-			return nil, errors.New("bad OPTIC_API_PORT: " + err.Error())
+			return nil, errors.New("bad PORT: " + err.Error())
 		}
 		config.ProxyListenAddr += ":" + opticPort
 	}

@@ -2,4 +2,4 @@ name: optic-go
 tasks:
   start:
     command: go run ./test
-    baseUrl: http://localhost:8889
+    inboundUrl: http://localhost:8889
