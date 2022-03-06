@@ -9,7 +9,7 @@ import (
 )
 
 func Format(specFilePath string) error {
-	swagger, err := openapi3.NewSwaggerLoader().LoadSwaggerFromFile(specFilePath)
+	swagger, err := openapi3.NewLoader().LoadFromFile(specFilePath)
 	if err != nil {
 		return err
 	}
@@ -45,7 +45,7 @@ func Format(specFilePath string) error {
 	return nil
 }
 
-func extractSchemas(allContent openapi3.Content, schemaName string, swagger *openapi3.Swagger) error {
+func extractSchemas(allContent openapi3.Content, schemaName string, swagger *openapi3.T) error {
 	i := 2
 	for _, content := range allContent {
 		// already extracted definition
