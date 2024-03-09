@@ -13,11 +13,11 @@ func Format(specFilePath string) error {
 	if err != nil {
 		return err
 	}
-	for _, path := range swagger.Paths {
+	for _, path := range swagger.Paths.Map() {
 		for _, operation := range path.Operations() {
 			// Optic sets Summary, while generators expect OperationID. Fix that.
 			operation.OperationID = operation.Summary
-			for code, response := range operation.Responses {
+			for code, response := range operation.Responses.Map() {
 				schemaName := fmt.Sprintf("%s_%s_Response", operation.OperationID, code)
 				if err := extractSchemas(response.Value.Content, schemaName, swagger); err != nil {
 					return err
